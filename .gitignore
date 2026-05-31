@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# NOTE: db.sqlite3 is intentionally NOT ignored — the pre-populated sample
+# database is committed so the project has data on a fresh clone.
