@@ -1,5 +1,8 @@
 from decimal import Decimal
+from io import StringIO
 
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
@@ -122,3 +125,40 @@ class ProductListViewTests(TestCase):
         response = self.client.get(self.url, {'tags': ['abc', self.wireless.id]})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context['products']), [self.headphones])
+
+
+class CreateAdminCommandTests(TestCase):
+    def _password_from(self, output):
+        for line in output.splitlines():
+            if line.startswith('Password: '):
+                return line[len('Password: '):]
+        return None
+
+    def test_creates_working_superuser_and_prints_password(self):
+        out = StringIO()
+        call_command('create_admin', stdout=out)
+        output = out.getvalue()
+
+        self.assertIn('Username: admin', output)
+        password = self._password_from(output)
+        self.assertTrue(password)
+
+        user = get_user_model().objects.get(username='admin')
+        self.assertTrue(user.is_superuser)
+        self.assertTrue(user.is_staff)
+        # The printed password must actually log the user in.
+        self.assertTrue(user.check_password(password))
+
+    def test_rerun_resets_password(self):
+        out1 = StringIO()
+        call_command('create_admin', stdout=out1)
+        first = self._password_from(out1.getvalue())
+
+        out2 = StringIO()
+        call_command('create_admin', stdout=out2)
+        second = self._password_from(out2.getvalue())
+
+        # Still exactly one admin, and the latest printed password is the valid one.
+        self.assertEqual(get_user_model().objects.filter(username='admin').count(), 1)
+        self.assertNotEqual(first, second)
+        self.assertTrue(get_user_model().objects.get(username='admin').check_password(second))

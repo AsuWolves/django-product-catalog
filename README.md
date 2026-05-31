@@ -28,27 +28,49 @@ source venv/bin/activate          # Windows: venv\Scripts\activate
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Apply migrations (no-op on a fresh clone — the database is already included)
-python manage.py migrate
-
-# 4. Run the development server
+# 3. Run the development server
 python manage.py runserver
 ```
 
 Then open:
 
-- **Search / filter page:** http://127.0.0.1:8000/
-- **Django admin:** http://127.0.0.1:8000/admin/
+- **Search / filter page:** http://127.0.0.1:8000/ (no login required)
+- **Django admin:** http://127.0.0.1:8000/admin/ (requires a login — see [Admin login](#admin-login) below)
 
 ### Admin login
 
-A demo superuser is included with the committed database:
+The committed database ships with no user account (no credentials live in this repo), so
+to use the Django admin you create one first. The product catalog at `/` is fully viewable
+without logging in — the admin is only needed to manage data.
 
-- **Username:** `admin`
-- **Password:** `adminpass123`
+Use the `create_admin` command — it creates a temporary admin and prints a random
+password:
 
-(If you ever start from an empty database, create your own with
-`python manage.py createsuperuser`.)
+```bash
+python manage.py create_admin
+```
+```
+Created admin user:
+Username: admin
+Password: Kd92mxPq7aLs
+```
+
+Then start the server and log in:
+
+```bash
+python manage.py runserver
+```
+
+Open http://127.0.0.1:8000/admin/ and enter the **Username** and **Password** printed
+above. Re-running `create_admin` resets the password and prints a new one (there is still
+just one `admin` user).
+
+It is a local/development convenience only — it prints a plaintext password, so don't use
+it in production.
+
+> The populated `db.sqlite3` is included in the repo, so no database setup is needed.
+> Only if you start from an empty database (e.g. you deleted `db.sqlite3`) do you need to
+> run `python manage.py migrate` first to create the tables.
 
 ## Using the search page
 
